@@ -1,0 +1,42 @@
+how to use jwt token for autherization before any endpoint or route function
+
+
+
+# Example user dictionary (replace with your actual user management logic)
+users = {
+    'admin': {'password': 'admin123', 'role': 'admin'},
+    'user': {'password': 'admin111', 'role': 'user'},
+}
+
+# Example user registration endpoint (for admin only)
+@user_blueprint.route('/tregistration', methods=['POST'])
+@jwt_required()  # Require JWT token to access this endpoint
+def registration():
+    current_user = get_jwt_identity()
+    if current_user != 'admin':
+        return jsonify({'message': 'Unauthorized access'}), 403
+
+    data = request.json
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    role = data.get('role')
+
+    # Replace with your actual user registration logic
+    # Example: store user data in database, etc.
+
+    return jsonify({'message': 'User registration successful', 'username': username}), 200
+
+# Login endpoint to generate JWT token
+@user_blueprint.route('/tlogin', methods=['POST'])
+def login():
+    username = request.json.get('username')
+    password = request.json.get('password')
+
+    # Example authentication logic (replace with your actual authentication logic)
+    if username in users and users[username]['password'] == password:
+        access_token = create_access_token(identity=username, additional_claims={'role': users[username]['role']})
+        return jsonify(access_token=access_token), 200
+    else:
+        return jsonify({"message": "Invalid credentials"}), 401
+
